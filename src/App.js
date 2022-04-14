@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useState, useEffect } from 'react';
+import Header from './components/Header';
+import PriceCalculator from './components/PriceCalculator';
+import RatesTable from './components/RatesTable';
+import { requestData } from './services/requests';
 
 function App() {
+  const [plans, setPlans] = useState([])
+  const [rates, setRates] = useState();
+
+  useEffect(() => {
+    async function fetchData() {
+      const apiPlans = await requestData('/plans');
+      const apiRates = await requestData('/rates');
+      setPlans(apiPlans);
+      setRates(apiRates);
+    }
+
+    fetchData();
+  }, [])
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Header />
+      <PriceCalculator plans={plans} rates={rates} />
+      <RatesTable rates={rates} />
     </div>
   );
 }
