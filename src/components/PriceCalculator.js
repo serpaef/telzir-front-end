@@ -10,12 +10,15 @@ function PriceCalculator({ rates, plans }) {
   const [priceWithPlan, setPriceWithPlan] = useState(0);
   const [priceWithoutPlan, setPriceWithoutPlan] = useState(0);
 
+  // better than repeat it every time on 'onChange'
   const changeController = (setter, {target: {value}}) => {
     setter(+value);
     calcPriceWithPlan();
     calcPriceWithoutPlan();
   }
 
+  // it sets the price to 0 if call minutes <= plan minutes
+  // otherwise, it calculates the final price with the excess minutes, with the 10% increase
   const calcPriceWithPlan = useCallback(() => {
     if (callMinutes <= planMinutes) {
       setPriceWithPlan(() => 0)
@@ -27,11 +30,13 @@ function PriceCalculator({ rates, plans }) {
     }
   }, [callMinutes, planMinutes, ratePrice])
 
+  // well, this one just makes the math.
   const calcPriceWithoutPlan = useCallback(() => {
     const callPrice = ratePrice * callMinutes;
     setPriceWithoutPlan(() => callPrice);
   }, [callMinutes, ratePrice])
 
+  // setting up initial state on rendering with api data.
   useEffect(() => {
     if(rates && plans) {
       setRatePrice(rates[0].pricePerMinute);
@@ -39,6 +44,7 @@ function PriceCalculator({ rates, plans }) {
     }
   },[plans, rates])
 
+  // updating total prices on component.
   useEffect(() => {
     calcPriceWithPlan();
     calcPriceWithoutPlan();
@@ -56,7 +62,7 @@ function PriceCalculator({ rates, plans }) {
             >
               <Form.Select
                 value={ratePrice}
-                onChange={(e) => changeController(setRatePrice, e)}
+                onChange={(event) => changeController(setRatePrice, event)}
               >
                 {rates &&
                   rates.map((rate) => (
@@ -76,7 +82,7 @@ function PriceCalculator({ rates, plans }) {
             >
               <Form.Select
                 value={planMinutes}
-                onChange={(e) => changeController(setPlanMinutes, e)}
+                onChange={(event) => changeController(setPlanMinutes, event)}
               >
                 {plans &&
                   plans.map((plan) => (
@@ -96,7 +102,7 @@ function PriceCalculator({ rates, plans }) {
               <Form.Control
                 type='number'
                 defaultValue={callMinutes}
-                onChange={(e) => changeController(setCallMinutes, e)}
+                onChange={(event) => changeController(setCallMinutes, event)}
               />
             </FloatingLabel>
           </Col>
