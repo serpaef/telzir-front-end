@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Form, Row, Col, Container, FloatingLabel } from 'react-bootstrap';
+
+const CALC_RATE_DIFF = 0.1;
 
 function PriceCalculator({ rates, plans }) {
   const [ratePrice, setRatePrice] = useState(0);
@@ -9,24 +11,38 @@ function PriceCalculator({ rates, plans }) {
   const [priceWithoutPlan, setPriceWithoutPlan] = useState(0);
 
   const changeController = (setter, {target: {value}}) => {
-    // TODO set states and calculate prices
+    setter(+value);
+    calcPriceWithPlan();
+    calcPriceWithoutPlan();
   }
 
-  const calcPriceWithPlan = () => {
-    // TODO
-  }
+  const calcPriceWithPlan = useCallback(() => {
+    if (callMinutes <= planMinutes) {
+      setPriceWithPlan(() => 0)
+    } else {
+      const minutesToCalc = callMinutes - planMinutes;
+      const rate = ratePrice + (ratePrice * CALC_RATE_DIFF);
+      const callPrice = minutesToCalc * rate;
+      setPriceWithPlan(callPrice);
+    }
+  }, [callMinutes, planMinutes, ratePrice])
 
-  const calcPriceWithoutPlan = () => {
-    // TODO
-  }
+  const calcPriceWithoutPlan = useCallback(() => {
+    const callPrice = ratePrice * callMinutes;
+    setPriceWithoutPlan(() => callPrice);
+  }, [callMinutes, ratePrice])
 
   useEffect(() => {
-    if (plans && rates) {
-      setPlanMinutes(plans[0].minutes);
+    if(rates && plans) {
       setRatePrice(rates[0].pricePerMinute);
+      setPlanMinutes(plans[0].minutes);
     }
-    // setting initial values accordingly when component mount
-  }, [rates, plans]);
+  },[plans, rates])
+
+  useEffect(() => {
+    calcPriceWithPlan();
+    calcPriceWithoutPlan();
+  }, [rates, plans, calcPriceWithPlan, calcPriceWithoutPlan]);
 
   return (
     <Container>
@@ -40,7 +56,7 @@ function PriceCalculator({ rates, plans }) {
             >
               <Form.Select
                 value={ratePrice}
-                onChange={({ target: { value } }) => setRatePrice(+value)}
+                onChange={(e) => changeController(setRatePrice, e)}
               >
                 {rates &&
                   rates.map((rate) => (
@@ -60,7 +76,7 @@ function PriceCalculator({ rates, plans }) {
             >
               <Form.Select
                 value={planMinutes}
-                onChange={({ target: { value } }) => setPlanMinutes(+value)}
+                onChange={(e) => changeController(setPlanMinutes, e)}
               >
                 {plans &&
                   plans.map((plan) => (
@@ -80,7 +96,7 @@ function PriceCalculator({ rates, plans }) {
               <Form.Control
                 type='number'
                 defaultValue={callMinutes}
-                onChange={({ target: { value } }) => setCallMinutes(+value)}
+                onChange={(e) => changeController(setCallMinutes, e)}
               />
             </FloatingLabel>
           </Col>
