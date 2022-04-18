@@ -1,6 +1,7 @@
 # Telzir Front-End
 
 Esta aplicação é direcionada ao uso em conjunto com <a href='https://github.com/serpaef/telzir-back-end'>Telzir Back-end</a>.
+Certifique-se que o Back-End está rodando corretamente para que a aplicação funcione.
 Um projeto feito para o teste técnico da empresa LOLDESIGN.
 
 ## Rodando localmente
